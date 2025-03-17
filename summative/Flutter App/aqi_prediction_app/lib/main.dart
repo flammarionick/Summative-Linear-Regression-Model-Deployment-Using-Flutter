@@ -1,122 +1,184 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
-  runApp(const MyApp());
+  runApp(AQIApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
+class AQIApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'AQI Prediction',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.orange,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: AQIPredictPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class AQIPredictPage extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _AQIPredictPageState createState() => _AQIPredictPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _AQIPredictPageState extends State<AQIPredictPage> {
+  // Controllers for TextFields
+  final TextEditingController _nmhcController = TextEditingController();
+  final TextEditingController _o3Controller = TextEditingController();
+  final TextEditingController _no2Controller = TextEditingController();
+  final TextEditingController _coController = TextEditingController();
+  
+  // Variable to store the prediction result
+  String _prediction = "";
+  bool _isLoading = false;
 
-  void _incrementCounter() {
+  // Method to send data to FastAPI and get prediction
+  Future<void> _getPrediction() async {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _isLoading = true;
     });
+
+    // Validate the inputs
+    if (_nmhcController.text.isEmpty || 
+        _o3Controller.text.isEmpty || 
+        _no2Controller.text.isEmpty || 
+        _coController.text.isEmpty) {
+      setState(() {
+        _prediction = 'Please fill in all fields';
+      });
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    if (double.tryParse(_nmhcController.text) == null ||
+        double.tryParse(_o3Controller.text) == null ||
+        double.tryParse(_no2Controller.text) == null ||
+        double.tryParse(_coController.text) == null) {
+      setState(() {
+        _prediction = 'Please enter valid numbers';
+      });
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    // Proceed with sending the request if validation passes
+    final url = 'http://127.0.0.1:8000/predict'; // Your FastAPI URL
+    
+    final response = await http.post(
+      Uri.parse(url),
+      body: json.encode({
+        "PT08_S2_NMHC": double.parse(_nmhcController.text),
+        "PT08_S5_O3": double.parse(_o3Controller.text),
+        "PT08_S4_NO2": double.parse(_no2Controller.text),
+        "PT08_S1_CO": double.parse(_coController.text),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (response.statusCode == 200) {
+      final predictionData = json.decode(response.body);
+      setState(() {
+        _prediction = predictionData['predicted_AQI'].toString();
+      });
+    } else {
+      setState(() {
+        _prediction = 'Error: Unable to fetch prediction.';
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text("AQI Prediction"),
+        backgroundColor: Colors.deepOrangeAccent,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            // Air quality index section
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'Air Quality Index (AQI)',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      _prediction.isNotEmpty ? _prediction : 'Enter values and click Predict',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
             ),
+            SizedBox(height: 30),
+            
+            // Input fields for AQI prediction
+            _buildInputField('PT08_S2_NMHC', _nmhcController),
+            _buildInputField('PT08_S5_O3', _o3Controller),
+            _buildInputField('PT08_S4_NO2', _no2Controller),
+            _buildInputField('PT08_S1_CO', _coController),
+            
+            SizedBox(height: 30),
+            
+            // Predict button
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _getPrediction,
+                    child: Text('Predict AQI'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrangeAccent,
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    ),
+                  ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Widget _buildInputField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
+        keyboardType: TextInputType.number,
+      ),
     );
   }
 }
+
+
+
+
