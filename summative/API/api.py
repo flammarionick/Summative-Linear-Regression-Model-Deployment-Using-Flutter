@@ -48,4 +48,4 @@ def predict_aqi(data: AQIInput):
 # Run the API using Uvicorn
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000) 
