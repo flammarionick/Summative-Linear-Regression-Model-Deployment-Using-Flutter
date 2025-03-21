@@ -42,9 +42,9 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
   String _prediction = "";
   String _timestamp = "";
   bool _isLoading = false;
-  List<FlSpot> _predictionSpots = [];  // For graph plotting
-  List<double> _predictionHistory = []; // Store prediction history for graph
-  List<DateTime> _timeHistory = []; // Store timestamps for graph
+  final List<FlSpot> _predictionSpots = [];  // For graph plotting
+  final List<double> _predictionHistory = []; // Store prediction history for graph
+  final List<DateTime> _timeHistory = []; // Store timestamps for graph
 
   // Method to send data to FastAPI and get prediction
   Future<void> _getPrediction() async {
