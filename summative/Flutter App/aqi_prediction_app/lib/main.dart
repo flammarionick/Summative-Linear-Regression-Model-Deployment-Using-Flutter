@@ -42,6 +42,9 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
   String _prediction = "";
   String _timestamp = "";
   bool _isLoading = false;
+  List<FlSpot> _predictionSpots = [];  // For graph plotting
+  List<double> _predictionHistory = []; // Store prediction history for graph
+  List<DateTime> _timeHistory = []; // Store timestamps for graph
 
   // Method to send data to FastAPI and get prediction
   Future<void> _getPrediction() async {
@@ -57,6 +60,7 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
       setState(() {
         _prediction = 'Please fill in all fields';
         _timestamp = '';
+        _predictionSpots.clear();
       });
       setState(() {
         _isLoading = false;
@@ -71,6 +75,7 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
       setState(() {
         _prediction = 'Please enter valid numbers';
         _timestamp = '';
+        _predictionSpots.clear();
       });
       setState(() {
         _isLoading = false;
@@ -100,14 +105,29 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
 
     if (response.statusCode == 200) {
       final predictionData = json.decode(response.body);
+      double predictionValue = double.tryParse(predictionData['predicted_AQI'].toString()) ?? 0;
+      
+      print('Prediction Value: $predictionValue'); // Debugging statement to print prediction value
+
       setState(() {
-        _prediction = predictionData['predicted_AQI'].toString();
+        _prediction = predictionValue.toString();
         _timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+        // Save prediction to history for graphing
+        _predictionHistory.add(predictionValue);
+        _timeHistory.add(DateTime.now());
+
+        // Add the prediction data to the graph (plotting over time)
+        _predictionSpots.add(FlSpot(
+          _predictionSpots.length.toDouble(), 
+          predictionValue
+        ));
       });
     } else {
       setState(() {
         _prediction = 'Error: Unable to fetch prediction.';
         _timestamp = '';
+        _predictionSpots.clear();
       });
     }
   }
@@ -123,6 +143,10 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
   }
 
   String _getHealthWarning() {
+    if (_prediction.isEmpty || double.tryParse(_prediction) == null) {
+      return '';  // No health warning if no prediction
+    }
+
     double aqi = double.tryParse(_prediction) ?? 0;
     if (aqi <= 50) return 'Good';
     if (aqi <= 100) return 'Moderate';
@@ -200,7 +224,7 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
             SizedBox(height: 20),
 
             // Optional: Prediction graph
-            _prediction.isNotEmpty
+            _predictionHistory.isNotEmpty
                 ? SizedBox(
                     height: 250,
                     child: LineChart(
@@ -209,15 +233,14 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
                         titlesData: FlTitlesData(show: false),
                         borderData: FlBorderData(show: true),
                         minX: 0,
-                        maxX: 10,
+                        maxX: _predictionHistory.length.toDouble(),
                         minY: 0,
-                        maxY: double.tryParse(_prediction) ?? 100,
+                        maxY: _predictionHistory.reduce((a, b) => a > b ? a : b), // Dynamically set maxY
                         lineBarsData: [
                           LineChartBarData(
-                            spots: [
-                              FlSpot(0, double.tryParse(_prediction) ?? 0),
-                              FlSpot(1, double.tryParse(_prediction) ?? 0),
-                            ],
+                            spots: List.generate(_predictionHistory.length, (index) {
+                              return FlSpot(index.toDouble(), _predictionHistory[index]);
+                            }),
                             isCurved: true,
                             color: Color(0xFF0000FF), // Blue color defined explicitly
                           ),
@@ -248,6 +271,9 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
     );
   }
 }
+
+
+
 
 
 

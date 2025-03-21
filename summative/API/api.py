@@ -8,7 +8,7 @@ import json
 # Load the trained model
 model = joblib.load("best_aqi_model.pkl")
 
-# Define the FastAPI app
+# Define the FastAPI app 
 app = FastAPI(title="AQI Prediction API")
 
 # CORS configuration: Allow all origins (can be restricted to specific URLs later)
