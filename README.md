@@ -38,6 +38,9 @@ You can interact with the API and test predictions via **Swagger UI** at the fol
 
 **(https://summative-linear-regression-model.onrender.com/docs#/default/predict_aqi_predict_post)**  
 
+## Publicly Available AQi Prediction App
+**https://device-streaming-3a4fe814.web.app/**
+
 
 ## Demo Video
 
