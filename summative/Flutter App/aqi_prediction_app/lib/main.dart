@@ -84,7 +84,7 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
     }
 
     // Proceed with sending the request if validation passes
-    final url = 'http://127.0.0.1:8000/predict'; // Your FastAPI URL
+    final url = 'https://summative-linear-regression-model.onrender.com/predict'; // Deployed FastAPI URL
     
     final response = await http.post(
       Uri.parse(url),
