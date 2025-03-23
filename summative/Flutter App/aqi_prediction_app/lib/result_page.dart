@@ -17,20 +17,20 @@ class ResultPage extends StatelessWidget {
   });
 
   Color _getAqiColor(double aqi) {
-    if (aqi <= 50) return Colors.green;
-    if (aqi <= 100) return Colors.yellow;
-    if (aqi <= 150) return Colors.orange;
-    if (aqi <= 200) return Colors.red;
-    if (aqi <= 300) return Colors.purple;
+    if (aqi <= 15) return Colors.green;
+    if (aqi <= 25) return Colors.yellow;
+    if (aqi <= 35) return Colors.orange;
+    if (aqi <= 45) return Colors.red;
+    if (aqi <= 50) return Colors.purple;
     return Colors.brown;
   }
 
   String _getHealthWarning(double aqi) {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for sensitive groups';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
+    if (aqi <= 15) return 'Good';
+    if (aqi <= 25) return 'Moderate';
+    if (aqi <= 35) return 'Unhealthy for sensitive groups';
+    if (aqi <= 45) return 'Unhealthy';
+    if (aqi <= 50) return 'Very Unhealthy';
     return 'Hazardous';
   }
 
