@@ -46,7 +46,7 @@ You can interact with the API and test predictions via **Swagger UI** at the fol
 
 Watch the demo video of the API in action on **YouTube**. The video shows how to interact with the API and make predictions.
 
-**[Demo Video Link](<Your YouTube Video Link>)**
+**https://youtu.be/-_04SIxNBbk**
 
 ---
 
