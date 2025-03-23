@@ -22,21 +22,36 @@ app.add_middleware(
 
 # Define the input data schema
 class AQIInput(BaseModel):
-    PT08_S2_NMHC: float
-    PT08_S5_O3: float
-    PT08_S4_NO2: float
     PT08_S1_CO: float
+    PT08_S2_NMHC: float
     PT08_S3_NOx: float
+    PT08_S4_NO2: float
+    PT08_S5_O3: float
+
 
 @app.post("/predict")
 def predict_aqi(data: AQIInput):
-    # Convert input data into a DataFrame
+    # Convert input to DataFrame
     input_data = pd.DataFrame([data.dict()])
 
-    # Adjust feature names to match those used during training
+    # Rename keys to match model feature names
     input_data.columns = [
-        "PT08.S2(NMHC)", "PT08.S5(O3)", "PT08.S4(NO2)", "PT08.S1(CO)", "PT08.S3(NOx)"
+        "PT08.S2(NMHC)",
+        "PT08.S5(O3)",
+        "PT08.S4(NO2)",
+        "PT08.S1(CO)",
+        "PT08.S3(NOx)"
     ]
+
+    # ✅ Reorder columns exactly as during training
+    correct_order = [
+        "PT08.S1(CO)",
+        "PT08.S2(NMHC)",
+        "PT08.S3(NOx)",
+        "PT08.S4(NO2)",
+        "PT08.S5(O3)"
+    ]
+    input_data = input_data[correct_order]
 
     # Make prediction
     prediction = model.predict(input_data)
