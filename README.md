@@ -1,7 +1,7 @@
 # Summative-Linear-Regression-Model-Deployment-Using-Flutter
 # AQI Prediction API
 
-This API predicts the **Air Quality Index (AQI)** based on pollution levels using the input values from various sensors.
+This API predicts the **Air Quality Index (AQI)** based on pollution levels using the input values.
 
 ## API Endpoint
 
@@ -36,7 +36,10 @@ This endpoint accepts a **POST** request with the following data to predict the 
 
 You can interact with the API and test predictions via **Swagger UI** at the following publicly available URL:
 
-**[Swagger UI Link](http://<your-api-url>/docs)**  
+**(https://summative-linear-regression-model.onrender.com/docs#/default/predict_aqi_predict_post)**  
+
+## Publicly Available AQi Prediction App
+**https://device-streaming-3a4fe814.web.app/**
 
 
 ## Demo Video
@@ -51,7 +54,7 @@ Watch the demo video of the API in action on **YouTube**. The video shows how to
 
 1. **Clone the Flutter project**:
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/flammarionick/Summative-Linear-Regression-Model-Deployment-Using-Flutter.git
    cd aqi_prediction_app
    ```
 
