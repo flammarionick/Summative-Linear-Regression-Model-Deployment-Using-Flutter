@@ -37,6 +37,9 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
   final TextEditingController _o3Controller = TextEditingController();
   final TextEditingController _no2Controller = TextEditingController();
   final TextEditingController _coController = TextEditingController();
+  final TextEditingController _noxController = TextEditingController();
+
+  
 
   String _validationMessage = 'Enter values and click Predict';
   bool _isLoading = false;
@@ -52,7 +55,8 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
     if (_nmhcController.text.isEmpty ||
         _o3Controller.text.isEmpty ||
         _no2Controller.text.isEmpty ||
-        _coController.text.isEmpty) {
+        _coController.text.isEmpty ||
+        _noxController.text.isEmpty) {
       setState(() {
         _validationMessage = 'Please fill in all fields';
         _isLoading = false;
@@ -63,7 +67,8 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
     if (double.tryParse(_nmhcController.text) == null ||
         double.tryParse(_o3Controller.text) == null ||
         double.tryParse(_no2Controller.text) == null ||
-        double.tryParse(_coController.text) == null) {
+        double.tryParse(_coController.text) == null ||
+        double.tryParse(_noxController.text) == null) {
       setState(() {
         _validationMessage = 'Please enter valid numbers';
         _isLoading = false;
@@ -81,6 +86,7 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
           "PT08_S5_O3": double.parse(_o3Controller.text),
           "PT08_S4_NO2": double.parse(_no2Controller.text),
           "PT08_S1_CO": double.parse(_coController.text),
+          "PT08_S3_NOx": double.parse(_noxController.text),
         }),
         headers: {
           "Content-Type": "application/json",
@@ -160,6 +166,7 @@ class _AQIPredictPageState extends State<AQIPredictPage> {
               _buildInputField('PT08_S5_O3', _o3Controller),
               _buildInputField('PT08_S4_NO2', _no2Controller),
               _buildInputField('PT08_S1_CO', _coController),
+              _buildInputField('PT08_S3_NOx', _noxController),
 
               SizedBox(height: 30),
 

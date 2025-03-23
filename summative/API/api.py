@@ -26,6 +26,7 @@ class AQIInput(BaseModel):
     PT08_S5_O3: float
     PT08_S4_NO2: float
     PT08_S1_CO: float
+    PT08_S3_NOx: float
 
 @app.post("/predict")
 def predict_aqi(data: AQIInput):
@@ -34,7 +35,7 @@ def predict_aqi(data: AQIInput):
 
     # Adjust feature names to match those used during training
     input_data.columns = [
-        "PT08.S2(NMHC)", "PT08.S5(O3)", "PT08.S4(NO2)", "PT08.S1(CO)"
+        "PT08.S2(NMHC)", "PT08.S5(O3)", "PT08.S4(NO2)", "PT08.S1(CO)", "PT08.S3(NOx)"
     ]
 
     # Make prediction
