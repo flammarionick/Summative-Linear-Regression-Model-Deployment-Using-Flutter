@@ -19,28 +19,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Only use features your model was trained with
+# Define expected input schema
 class AQIInput(BaseModel):
-    PT08_S1_CO: float
     PT08_S2_NMHC: float
-    PT08_S3_NOx: float
-    PT08_S4_NO2: float
+    PT08_S1_CO: float
     PT08_S5_O3: float
+    PT08_S4_NO2: float
+    PT08_S3_NOx: float
 
 @app.post("/predict")
 def predict_aqi(data: AQIInput):
-    # Input keys must match training features
+    # Match column names from training
     input_data = pd.DataFrame([{
-        "PT08.S1(CO)": data.PT08_S1_CO,
         "PT08.S2(NMHC)": data.PT08_S2_NMHC,
-        "PT08.S3(NOx)": data.PT08_S3_NOx,
-        "PT08.S4(NO2)": data.PT08_S4_NO2,
+        "PT08.S1(CO)": data.PT08_S1_CO,
         "PT08.S5(O3)": data.PT08_S5_O3,
+        "PT08.S4(NO2)": data.PT08_S4_NO2,
+        "PT08.S3(NOx)": data.PT08_S3_NOx,
     }])
+
+    # Reorder exactly as trained
+    ordered_cols = [
+        "PT08.S2(NMHC)",
+        "PT08.S1(CO)",
+        "PT08.S5(O3)",
+        "PT08.S4(NO2)",
+        "PT08.S3(NOx)"
+    ]
+    input_data = input_data[ordered_cols]
 
     # Predict
     prediction = model.predict(input_data)
-    prediction = max(prediction.tolist()[0], 0)  # Ensure non-negative
+    prediction = max(prediction.tolist()[0], 0)
 
     return {"predicted_AQI": prediction}
 
