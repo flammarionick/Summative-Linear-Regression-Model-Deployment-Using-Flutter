@@ -11,57 +11,77 @@ model = joblib.load("best_aqi_model.pkl")
 # Define the FastAPI app 
 app = FastAPI(title="AQI Prediction API")
 
-# CORS configuration: Allow all origins (can be restricted to specific URLs later)
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict this to your Flutter app's URL for production
+    allow_origins=["*"],  # Can restrict this in production
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Define the input data schema
+# Define the input data schema — all required training features
 class AQIInput(BaseModel):
     PT08_S1_CO: float
+    NMHC_GT: float
+    C6H6_GT: float
     PT08_S2_NMHC: float
+    NOx_GT: float
     PT08_S3_NOx: float
+    NO2_GT: float
     PT08_S4_NO2: float
     PT08_S5_O3: float
-
+    T: float
+    RH: float
+    AH: float
 
 @app.post("/predict")
 def predict_aqi(data: AQIInput):
     # Convert input to DataFrame
     input_data = pd.DataFrame([data.dict()])
 
-    # Rename keys to match model feature names
+    # Rename columns to match exactly how the model was trained
     input_data.columns = [
-        "PT08.S2(NMHC)",
-        "PT08.S5(O3)",
-        "PT08.S4(NO2)",
         "PT08.S1(CO)",
-        "PT08.S3(NOx)"
+        "NMHC(GT)",
+        "C6H6(GT)",
+        "PT08.S2(NMHC)",
+        "NOx(GT)",
+        "PT08.S3(NOx)",
+        "NO2(GT)",
+        "PT08.S4(NO2)",
+        "PT08.S5(O3)",
+        "T",
+        "RH",
+        "AH"
     ]
 
-    # ✅ Reorder columns exactly as during training
-    correct_order = [
+    # Reorder columns to match training order (redundant if already correct)
+    feature_order = [
         "PT08.S1(CO)",
+        "NMHC(GT)",
+        "C6H6(GT)",
         "PT08.S2(NMHC)",
+        "NOx(GT)",
         "PT08.S3(NOx)",
+        "NO2(GT)",
         "PT08.S4(NO2)",
-        "PT08.S5(O3)"
+        "PT08.S5(O3)",
+        "T",
+        "RH",
+        "AH"
     ]
-    input_data = input_data[correct_order]
+    input_data = input_data[feature_order]
 
     # Make prediction
     prediction = model.predict(input_data)
 
-    # Clip prediction to be at least 0
-    prediction = max(prediction.tolist()[0], 0)  # Ensure the AQI is non-negative
+    # Ensure prediction is non-negative
+    prediction = max(prediction.tolist()[0], 0)
 
     return {"predicted_AQI": prediction}
 
-# Run the API using Uvicorn
+# Run the API locally
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)
